@@ -10,10 +10,27 @@ class Scheduler:
     def add_task(self, task):
         self.tasks.append(task)
 
+    def check_schedulability(self):
+        utilization = sum(task.t / task.p for task in self.tasks if task.p != float('inf'))
+        n = len([task for task in self.tasks if task.p != float('inf')])  # Count only periodic tasks
+
+        if globals.algorithm == 'RMS':
+            bound = n * (2 ** (1 / n) - 1)
+        elif globals.algorithm == 'EDF':
+            bound = 1
+
+        schedulable = utilization <= bound
+        return utilization, schedulable
+
     def run(self):
         self.total_time = globals.time
         self.timeline = ['idle'] * globals.time 
 
+        utilization, schedulable = self.check_schedulability()
+        print(f"Utilization rate: {utilization}:")
+        if not schedulable:
+            print("These tasks are not schedulable!")
+            return
         for current_time in range(globals.time):
             if self.scheduling_algorithm == 'EDF':
                 # Filter tasks that can still run
