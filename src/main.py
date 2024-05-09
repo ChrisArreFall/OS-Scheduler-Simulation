@@ -20,24 +20,31 @@ def run_cli(args):
         sys.exit(1)
 
     # Run scheduler
-    globals.scheduler.run(args.time)
+    globals.time = args.time
+    globals.scheduler.run()
 
     # Output results to specified file
     try:
         with open(args.output, 'w') as file:
-            stats = globals.scheduler.report_statistics(False)
+            stats = globals.scheduler.report_statistics()
             for process_id, stats in stats.items():
-                file.write(f"Process {process_id}: Executed {stats['executed']} times, Missed Deadlines {stats['missed_deadlines']}\n")
+                executed_percent = (stats['executed'] / globals.time) * 100
+                missed_percent = (stats['missed_deadlines'] / globals.time) * 100
+                not_executed_percent = 100 - executed_percent
+                file.write(f"Process {process_id}:\n")
+                file.write(f"  Executed {stats['executed']} times ({executed_percent:.2f}%)\n")
+                file.write(f"  Missed Deadlines {stats['missed_deadlines']} ({missed_percent:.2f}%)\n")
+                file.write(f"  Not Executed {stats['not_executed']} times ({not_executed_percent:.2f}%)\n")
     except Exception as e:
         print(f"Failed to write results to {args.output}: {e}")
         sys.exit(1)
 
 def main():
     parser = argparse.ArgumentParser(description="Task Scheduler Application")
-    parser.add_argument("-i", "--input", required=True, help="Input file with tasks.")
-    parser.add_argument("-o", "--output", required=True, help="Output file to save the results.")
+    parser.add_argument("-i", "--input", help="Input file with tasks.")
+    parser.add_argument("-o", "--output", help="Output file to save the results.")
     parser.add_argument("-a", "--algorithm", choices=['EDF', 'RMS'], default='EDF', help="Scheduling algorithm to use (default: EDF)")
-    parser.add_argument("-t", "--time", type=int, required=True, help="Total time to run the scheduler.")
+    parser.add_argument("-t", "--time", type=int, help="Total time to run the scheduler.")
     parser.add_argument("-gui", "--graphical", action='store_true', help="Run in graphical mode")
     
     args = parser.parse_args()

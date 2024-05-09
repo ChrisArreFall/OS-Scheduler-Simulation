@@ -6,7 +6,7 @@ class Tarea:
             print("Error: process_id must be an integer.")
             return None
         self.process_id = process_id
-        self.p = p
+        self.p = float(p) if p != 'inf' else float('inf')  # 'inf' input for aperiodic tasks
         self.d = d
         self.t = t
     
