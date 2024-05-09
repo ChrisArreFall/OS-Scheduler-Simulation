@@ -51,7 +51,7 @@ def main():
 
     if args.graphical:
         app = QApplication(sys.argv)
-        gui = GUI(args)
+        gui = GUI()
         gui.show()
         sys.exit(app.exec_())
     else:

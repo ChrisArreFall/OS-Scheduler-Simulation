@@ -9,16 +9,10 @@ import globals
 globals.init()
 
 class GUI(QWidget):
-    def __init__(self, args):
+    def __init__(self):
         super().__init__()
-        self.args = args
-        self.init_scheduler()
         self.tasks = []
         self.init_ui()
-
-    def init_scheduler(self):
-        # Initialize the scheduler with algorithm
-        globals.init(self.args.algorithm)
 
     def init_ui(self):
         self.setWindowTitle('Task Scheduler GUI')
