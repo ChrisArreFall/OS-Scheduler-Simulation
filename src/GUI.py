@@ -49,19 +49,12 @@ class GUI(QWidget):
         self.help_btn = QPushButton('Show Help')
         self.help_btn.clicked.connect(self.show_help)
 
-        # timeline
-        self.scene = QGraphicsScene()
-        self.view = QGraphicsView(self.scene)
-        self.view.setFixedSize(600, 200)
-        self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-
         main_layout.addLayout(form_layout)
         main_layout.addWidget(self.add_task_btn)
         main_layout.addWidget(self.tasks_list)
         main_layout.addWidget(self.start_scheduler_btn)
         main_layout.addWidget(self.stats_btn)
-        main_layout.addWidget(self.view)
+        main_layout.addWidget(self.help_btn)
 
         self.setLayout(main_layout)
 
