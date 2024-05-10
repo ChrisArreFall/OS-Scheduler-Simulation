@@ -1,6 +1,7 @@
 import sys
 from Tarea import Tarea
 from StatsDialog import StatsDialog
+from PlotDialog import PlotDialog
 from HelpDialog import HelpDialog
 from PyQt5.QtWidgets import QWidget, QComboBox, QVBoxLayout, QListWidget, QLabel, QLineEdit, QApplication, QPushButton, QFormLayout, QGraphicsView, QGraphicsScene
 from PyQt5.QtCore import Qt
@@ -64,6 +65,26 @@ class GUI(QWidget):
 
         self.setLayout(main_layout)
 
+        # TODO: REMOVE THIS 
+        """process_id = 1
+        p = 100000
+        d = 50
+        t = 20
+        self.tasks.append(Tarea(process_id, p, d, t))
+        self.tasks_list.addItem(f'ID: {process_id}, p: {p}, d: {d}, t: {t}')
+        process_id = 2
+        p = 10000
+        d = 75
+        t = 30
+        self.tasks.append(Tarea(process_id, p, d, t))
+        self.tasks_list.addItem(f'ID: {process_id}, p: {p}, d: {d}, t: {t}')
+        process_id = 3
+        p = 100000
+        d = 100
+        t = 50
+        self.tasks.append(Tarea(process_id, p, d, t))
+        self.tasks_list.addItem(f'ID: {process_id}, p: {p}, d: {d}, t: {t}')"""
+
     def add_task(self):
         process_id = int(self.process_id_input.text())
         p = int(self.p_input.text())
@@ -88,12 +109,15 @@ class GUI(QWidget):
             globals.scheduler.add_task(task)
         globals.scheduler.run()
 
-    def draw_timeline(self, stats):
-        print("drawing")
+    def draw_timeline(self):
+        data = globals.scheduler.generate_plot_data()
+
+        self.plot_dialog = PlotDialog(data)
+        self.plot_dialog.show()
 
     def show_stats(self):
         stats = globals.scheduler.report_statistics()
-        self.draw_timeline(stats)
+        self.draw_timeline()
         self.stats_dialog = StatsDialog(stats)
         self.stats_dialog.show()
 

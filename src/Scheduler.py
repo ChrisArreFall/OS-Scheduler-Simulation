@@ -51,6 +51,24 @@ class Scheduler:
             else:
                 self.timeline[current_time] = 'idle'
 
+    def generate_plot_data(self):
+        last_task = self.timeline[0]
+        start_time = 0
+        plot_data = []
+
+        for i, entry in enumerate(self.timeline):
+            if entry != last_task:
+                plot_data.append(dict(Task=last_task, Start=start_time, Finish=i))
+                last_task = entry
+                start_time = i
+
+        # Add last task
+        plot_data.append(dict(Task=last_task, Start=start_time, Finish=len(self.timeline)))
+
+
+        return plot_data
+
+           
     def report_statistics(self):
         task_stats = {task.process_id: {'executed': 0, 'missed_deadlines': 0, 'not_executed': 0} for task in self.tasks}
         for i, entry in enumerate(self.timeline):
