@@ -79,40 +79,46 @@ class GUI(QWidget):
         self.tasks_list.addItem(f'ID: {process_id}, p: {p}, d: {d}, t: {t}')"""
 
     def add_task(self):
-        process_id = int(self.process_id_input.text())
-        p = int(self.p_input.text())
-        d = int(self.d_input.text())
-        t = int(self.t_input.text())
+        if(self.process_id_input.text() != '' 
+           and self.p_input.text() != '' 
+           and self.d_input.text() != '' 
+           and self.t_input.text() != ''):
+            
+            process_id = int(self.process_id_input.text())
+            p = int(self.p_input.text())
+            d = int(self.d_input.text())
+            t = int(self.t_input.text())
 
-        # Create task
-        new_task = Tarea(process_id, p, d, t)
-        # Add task
-        self.tasks.append(new_task)
-        self.tasks_list.addItem(f'ID: {process_id}, p: {p}, d: {d}, t: {t}')
+            # Create task
+            new_task = Tarea(process_id, p, d, t)
+            # Add task
+            self.tasks.append(new_task)
+            self.tasks_list.addItem(f'ID: {process_id}, p: {p}, d: {d}, t: {t}')
 
-        # printing to verify input
-        print(f'Added task: Process ID={process_id}, p={p}, d={d}, t={t}')
+            # TODO: REMOVE THIS printing to verify input
+            #print(f'Added task: Process ID={process_id}, p={p}, d={d}, t={t}')
 
     def start_scheduler(self):
-        algorithm = self.algorithm_selector.currentText()
-        globals.init(algorithm)
-        globals.time = int(self.time_input.text())
-        print(globals.time)
-        for task in self.tasks:
-            globals.scheduler.add_task(task)
-        globals.scheduler.run()
+        if(len(self.tasks) > 0):
+            algorithm = self.algorithm_selector.currentText()
+            globals.init(algorithm)
+            globals.time = int(self.time_input.text())
+            print(globals.time)
+            for task in self.tasks:
+                globals.scheduler.add_task(task)
+            globals.scheduler.run()
 
     def draw_timeline(self):
         data = globals.scheduler.generate_plot_data()
-
         self.plot_dialog = PlotDialog(data)
         self.plot_dialog.show()
 
     def show_stats(self):
-        stats = globals.scheduler.report_statistics()
-        self.draw_timeline()
-        self.stats_dialog = StatsDialog(stats)
-        self.stats_dialog.show()
+       if(len(globals.scheduler.timeline) > 0):
+            stats = globals.scheduler.report_statistics()
+            self.draw_timeline()
+            self.stats_dialog = StatsDialog(stats)
+            self.stats_dialog.show()
 
     def show_help(self):
         self.help_dialog = HelpDialog()
