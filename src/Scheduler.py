@@ -202,6 +202,7 @@ class Scheduler:
             print(f"  Executed {stats['executed']} times ({executed_percent:.2f}%)")
             print(f"  Missed Deadlines {stats['missed_deadlines']} ({missed_percent:.2f}%)")
             print(f"  Not Executed {stats['not_executed']} times ({not_executed_percent:.2f}%)")
+        return task_stats
 
     def check_schedulability(self):
         utilization = sum(task.t / task.p for task in self.tasks if task.p != float('inf'))

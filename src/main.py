@@ -1,5 +1,15 @@
+"""
+Task Scheduler Application
+Period (p): The amount of time in wich a task should be regularly excecuted.
+Deadline (d): The time at which the task should be completed.
+Computation time (t): Time the CPU takes to complete the task without interruption.
+Statistics - Execution time: Total amount of time the task has been running, both in units of time and percentage of run time.
+Statistics - Missed deadlines: The number of times the task could not be completed before its deadline.
+Statistics - Not executed time: The time the task was not being exceuted, both in units of time and percentage of run time.
+"""
 import sys
 import argparse
+from argparse import RawTextHelpFormatter
 from PyQt5.QtWidgets import QApplication
 from GUI import GUI
 from Tarea import Tarea
@@ -40,7 +50,7 @@ def run_cli(args):
         sys.exit(1)
 
 def main():
-    parser = argparse.ArgumentParser(description="Task Scheduler Application")
+    parser = argparse.ArgumentParser(description=__doc__,formatter_class=RawTextHelpFormatter)
     parser.add_argument("-i", "--input", help="Input file with tasks.")
     parser.add_argument("-o", "--output", help="Output file to save the results.")
     parser.add_argument("-a", "--algorithm", choices=['EDF', 'RMS'], default='EDF', help="Scheduling algorithm to use (default: EDF)")
