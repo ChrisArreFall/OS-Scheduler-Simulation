@@ -99,7 +99,7 @@ class GUI(QWidget):
             #print(f'Added task: Process ID={process_id}, p={p}, d={d}, t={t}')
 
     def start_scheduler(self):
-        if(len(self.tasks) > 0):
+        if(len(self.tasks) > 0 and self.time_input.text() != ''):
             algorithm = self.algorithm_selector.currentText()
             globals.init(algorithm)
             globals.time = int(self.time_input.text())
