@@ -23,8 +23,8 @@ def run_cli(args):
     try:
         with open(args.input, 'r') as file:
             for line in file:
-                process_id, p, d, t = map(int, line.split())
-                globals.scheduler.add_task(Tarea(process_id, p, d, t))
+                process_id, p, t = map(int, line.split())
+                globals.scheduler.add_task(Tarea(process_id, p, t))
     except Exception as e:
         print(f"Failed to read tasks from {args.input}: {e}")
         sys.exit(1)

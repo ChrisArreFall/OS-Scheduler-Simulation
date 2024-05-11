@@ -30,7 +30,6 @@ class GUI(QWidget):
         form_layout.addRow(QLabel('Time:'), self.time_input)
         form_layout.addRow(QLabel('Process ID:'), self.process_id_input)
         form_layout.addRow(QLabel('Period (p):'), self.p_input)
-        form_layout.addRow(QLabel('Deadline (d):'), self.d_input)
         form_layout.addRow(QLabel('Execution Time (t):'), self.t_input)
 
         #Algorithm selection
@@ -81,19 +80,17 @@ class GUI(QWidget):
     def add_task(self):
         if(self.process_id_input.text() != '' 
            and self.p_input.text() != '' 
-           and self.d_input.text() != '' 
            and self.t_input.text() != ''):
             
             process_id = int(self.process_id_input.text())
             p = int(self.p_input.text())
-            d = int(self.d_input.text())
             t = int(self.t_input.text())
 
             # Create task
-            new_task = Tarea(process_id, p, d, t)
+            new_task = Tarea(process_id, p, t)
             # Add task
             self.tasks.append(new_task)
-            self.tasks_list.addItem(f'ID: {process_id}, p: {p}, d: {d}, t: {t}')
+            self.tasks_list.addItem(f'ID: {process_id}, p: {p}, t: {t}')
 
             # TODO: REMOVE THIS printing to verify input
             #print(f'Added task: Process ID={process_id}, p={p}, d={d}, t={t}')
