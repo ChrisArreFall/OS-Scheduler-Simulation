@@ -18,13 +18,18 @@ import globals
 def run_cli(args):
     # Initialize the scheduler with algorithm
     globals.init(args.algorithm)
-
+    globals.gui = False
     # Load tasks from input file
     try:
         with open(args.input, 'r') as file:
             for line in file:
-                process_id, p, t = map(int, line.split())
-                globals.scheduler.add_task(Tarea(process_id, p, t))
+                parts = line.split()
+                # Convert each part; handle 'inf' specifically for the period (p)
+                process_id = int(parts[0])
+                p = float('inf') if parts[1].lower() == 'inf' else int(parts[1])
+                d = int(parts[2])
+                t = int(parts[3])
+                globals.scheduler.add_task(Tarea(process_id, p, d, t))
     except Exception as e:
         print(f"Failed to read tasks from {args.input}: {e}")
         sys.exit(1)

@@ -1,7 +1,7 @@
 Process 1:
-  Executed 90 times (56.25%)
-  Missed Deadlines 1 (0.62%)
-  Not Executed 70 times (43.75%)
+  Executed 75 times (46.88%)
+  Missed Deadlines 2 (1.25%)
+  Not Executed 85 times (53.12%)
 Process 2:
   Executed 70 times (43.75%)
   Missed Deadlines 1 (0.62%)

@@ -26,40 +26,61 @@ class Scheduler:
         task_info = {
             task.process_id: {
                 'remaining': task.t,
-                'next_deadline': task.t,
+                'aperiodic': False if task.p != float('inf') else True,
+                'next_deadline': task.p if task.p != float('inf') else task.d,
+                'resumption_time': 0,  # Time when the task is eligible to resume
                 'period_start': 0
             } for task in self.tasks
         }
-        
+        print("Initial task info:", task_info)
         self.timeline = ['idle'] * globals.time
         self.total_time = globals.time
+        currently_executing = None
 
         # Check if tasks are schedulable for EDF
         utilization, schedulable = self.check_schedulability()
         print(f"Utilization rate: {utilization}:")
         if not schedulable:
             print("These tasks are not schedulable!")
-            return
+            if not globals.gui:
+                answer = str(input("Want to continue? y/N:  "))
+                if answer != 'y':
+                    return
         
         # for each time unit in the total time
         for current_time in range(self.total_time):
             # Prepare list of tasks that can run
-            ready_tasks = [task for task in self.tasks if task_info[task.process_id]['remaining'] > 0]
-            
+            ready_tasks = [task for task in self.tasks if task_info[task.process_id]['remaining'] > 0 and current_time >= task_info[task.process_id]['resumption_time']]
+            print(f"Ready tasks at time {current_time}: {[task.process_id for task in ready_tasks]}")
             # Sort tasks based on the deadline, 'inf' deadlines get the lowest priority
-            ready_tasks.sort(key=lambda x: (task_info[x.process_id]['next_deadline'] if task_info[x.process_id]['next_deadline'] != float('inf') else self.total_time))
+            ready_tasks.sort(key=lambda x: (task_info[x.process_id]['next_deadline']))
+            print(f"Sorted tasks at time {current_time}: {[task.process_id for task in ready_tasks]}")
 
             # Execute the highest priority task
             if ready_tasks:
                 current_task = ready_tasks[0]
                 process_id = current_task.process_id
+                print("Task: ", 1, "deadline: ", task_info[1]['next_deadline'])
+                print("Task: ", 2, "deadline: ", task_info[2]['next_deadline'])
+                if (self.total_time - current_time) < task_info[process_id]['remaining']:
+                    break
+                # Check if a higher priority task preempts the current one
+                if currently_executing is None or process_id != currently_executing:
+                    if currently_executing is not None and task_info[currently_executing]['remaining'] > 0:
+                        print(f"Task {currently_executing} preempted by Task {process_id} at time {current_time}")
+
+                    currently_executing = process_id
+                    # Record the new period start if the task is starting fresh
+                    if task_info[process_id]['remaining'] == current_task.t:
+                        task_info[process_id]['period_start'] = current_time
+
                 task_info[process_id]['remaining'] -= 1
                 self.timeline[current_time] = f'Process {process_id}'
-
                 # Record execution start and end times
                 if task_info[process_id]['remaining'] == current_task.t - 1:
                     task_info[process_id]['period_start'] = current_time
 
+                print(f"Executing Task {process_id}, Remaining time {task_info[process_id]['remaining']}")
                 if task_info[process_id]['remaining'] == 0:
                     start_time = task_info[process_id]['period_start']
                     end_time = current_time
@@ -70,8 +91,19 @@ class Scheduler:
                     if current_task.p != float('inf'):
                         task_info[process_id]['next_deadline'] += current_task.p
                         task_info[process_id]['remaining'] = current_task.t
+                        task_info[process_id]['resumption_time'] += current_task.p
+                        currently_executing = None
+                        print(f"Task {process_id} completed, resetting for next period starting at {task_info[process_id]['resumption_time']}")
+                    else:
+                        task_info[process_id]['next_deadline'] += current_task.d
+                        task_info[process_id]['remaining'] = current_task.t
+                        task_info[process_id]['resumption_time'] += current_time # Make it eligible for its next period
+                        currently_executing = None
+                        print(f"Task {process_id} completed, resetting for next period starting at {task_info[process_id]['resumption_time']}")
             else:
                 self.timeline[current_time] = 'idle'
+                currently_executing = None
+                print(f"System idle at time {current_time}")
         
         print("Execution periods:", self.execution_periods)
         self.plot_schedule()
@@ -84,7 +116,7 @@ class Scheduler:
                 'remaining': task.t,
                 'next_deadline': 0,  # Set initial activation to time 0
                 'period_start': -1,  # No active period initially
-                'resumption_time': 0,  # Time when the task is eligible to resume after preemption
+                'resumption_time': 0,  # Time when the task is eligible to resume
                 'started': False
             } for task in self.tasks
         }
@@ -98,9 +130,12 @@ class Scheduler:
         # Check if tasks are schedulable for RMS
         utilization, schedulable = self.check_schedulability()
         print(f"Utilization rate: {utilization}:")
-        #if not schedulable:
-        #    print("These tasks are not schedulable!")
-        #    return
+        if not schedulable:
+            print("These tasks are not schedulable!")
+            if not globals.gui:
+                answer = str(input("Want to continue? y/N:  "))
+                if answer != 'y':
+                    return
         
         # for each time unit in the total time
         for current_time in range(self.total_time):
@@ -115,7 +150,8 @@ class Scheduler:
             if ready_tasks:
                 current_task = ready_tasks[0]
                 process_id = current_task.process_id
-
+                if (self.total_time - current_time) < task_info[process_id]['remaining']:
+                    break
                 # Check if a higher priority task preempts the current one
                 if currently_executing is None or process_id != currently_executing:
                     if currently_executing is not None and task_info[currently_executing]['remaining'] > 0:
@@ -220,16 +256,20 @@ class Scheduler:
     
     def report_statistics(self):
         task_stats = {task.process_id: {'executed': 0, 'missed_deadlines': 0, 'not_executed': 0} for task in self.tasks}
+        
+        for task in self.tasks:
+            period = task.p if task.p != float('inf') else task.d
+            for i in range (period,globals.time,period):
+                process = "Process " + str(task.process_id)
+                if self.timeline[i] != process:
+                    task_stats[task.process_id]['missed_deadlines'] += 1
+
         for i, entry in enumerate(self.timeline):
             print(entry)
             if entry != 'idle':
                 process_id = int(entry.split()[1])
                 task_stats[process_id]['executed'] += 1
-            for task in self.tasks:
-                if i >= task.t and task.t > 0:  # Check for missed deadline
-                    task_stats[task.process_id]['missed_deadlines'] += 1
-                    task.t = 0  # Assume task cannot execute after deadline missed
-
+            
         for task in self.tasks:
             task_stats[task.process_id]['not_executed'] = self.total_time - task_stats[task.process_id]['executed']
         

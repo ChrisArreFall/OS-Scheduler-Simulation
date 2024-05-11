@@ -1,7 +1,6 @@
 import sys
 from Tarea import Tarea
 from StatsDialog import StatsDialog
-from PlotDialog import PlotDialog
 from HelpDialog import HelpDialog
 from PyQt5.QtWidgets import QWidget, QComboBox, QVBoxLayout, QListWidget, QLabel, QLineEdit, QApplication, QPushButton, QFormLayout, QGraphicsView, QGraphicsScene
 from PyQt5.QtCore import Qt
@@ -30,6 +29,7 @@ class GUI(QWidget):
         form_layout.addRow(QLabel('Time:'), self.time_input)
         form_layout.addRow(QLabel('Process ID:'), self.process_id_input)
         form_layout.addRow(QLabel('Period (p):'), self.p_input)
+        form_layout.addRow(QLabel('Deadline (d):'), self.d_input)
         form_layout.addRow(QLabel('Execution Time (t):'), self.t_input)
 
         #Algorithm selection
@@ -48,6 +48,13 @@ class GUI(QWidget):
         self.help_btn = QPushButton('Show Help')
         self.help_btn.clicked.connect(self.show_help)
 
+        # timeline
+        self.scene = QGraphicsScene()
+        self.view = QGraphicsView(self.scene)
+        self.view.setFixedSize(600, 200)
+        self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
         main_layout.addLayout(form_layout)
         main_layout.addWidget(self.add_task_btn)
         main_layout.addWidget(self.tasks_list)
@@ -57,65 +64,35 @@ class GUI(QWidget):
 
         self.setLayout(main_layout)
 
-        # TODO: REMOVE THIS 
-        """process_id = 1
-        p = 100000
-        d = 50
-        t = 20
-        self.tasks.append(Tarea(process_id, p, d, t))
-        self.tasks_list.addItem(f'ID: {process_id}, p: {p}, d: {d}, t: {t}')
-        process_id = 2
-        p = 10000
-        d = 75
-        t = 30
-        self.tasks.append(Tarea(process_id, p, d, t))
-        self.tasks_list.addItem(f'ID: {process_id}, p: {p}, d: {d}, t: {t}')
-        process_id = 3
-        p = 100000
-        d = 100
-        t = 50
-        self.tasks.append(Tarea(process_id, p, d, t))
-        self.tasks_list.addItem(f'ID: {process_id}, p: {p}, d: {d}, t: {t}')"""
-
     def add_task(self):
-        if(self.process_id_input.text() != '' 
-           and self.p_input.text() != '' 
-           and self.t_input.text() != ''):
-            
-            process_id = int(self.process_id_input.text())
-            p = int(self.p_input.text())
-            t = int(self.t_input.text())
+        process_id = int(self.process_id_input.text())
+        p = float('inf') if self.p_input.text() == 'inf' else int(self.p_input.text())
+        d = int(self.d_input.text())
+        t = int(self.t_input.text())
 
-            # Create task
-            new_task = Tarea(process_id, p, t)
-            # Add task
-            self.tasks.append(new_task)
-            self.tasks_list.addItem(f'ID: {process_id}, p: {p}, t: {t}')
+        # Create task
+        new_task = Tarea(process_id, p, d, t)
+        # Add task
+        self.tasks.append(new_task)
+        self.tasks_list.addItem(f'ID: {process_id}, p: {p}, d: {d}, t: {t}')
 
-            # TODO: REMOVE THIS printing to verify input
-            #print(f'Added task: Process ID={process_id}, p={p}, d={d}, t={t}')
+        # printing to verify input
+        print(f'Added task: Process ID={process_id}, p={p}, d={d}, t={t}')
 
     def start_scheduler(self):
-        if(len(self.tasks) > 0 and self.time_input.text() != ''):
-            algorithm = self.algorithm_selector.currentText()
-            globals.init(algorithm)
-            globals.time = int(self.time_input.text())
-            print(globals.time)
-            for task in self.tasks:
-                globals.scheduler.add_task(task)
-            globals.scheduler.run()
+        algorithm = self.algorithm_selector.currentText()
+        globals.init(algorithm)
+        globals.time = int(self.time_input.text())
+        print(globals.time)
+        for task in self.tasks:
+            globals.scheduler.add_task(task)
+        globals.scheduler.run()
 
-    def draw_timeline(self):
-        data = globals.scheduler.generate_plot_data()
-        self.plot_dialog = PlotDialog(data)
-        self.plot_dialog.show()
 
     def show_stats(self):
-       if(len(globals.scheduler.timeline) > 0):
-            stats = globals.scheduler.report_statistics()
-            self.draw_timeline()
-            self.stats_dialog = StatsDialog(stats)
-            self.stats_dialog.show()
+        stats = globals.scheduler.report_statistics()
+        self.stats_dialog = StatsDialog(stats)
+        self.stats_dialog.show()
 
     def show_help(self):
         self.help_dialog = HelpDialog()
